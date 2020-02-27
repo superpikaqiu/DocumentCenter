@@ -1,0 +1,121 @@
+html,body,.login-container{
+    height: 100%;
+}
+body{
+    background-image: -webkit-linear-gradient( -45deg, rgb(85,107,218) 0%, rgb(74,77,242) 100%);
+    background-image: -moz-linear-gradient( -45deg, rgb(85,107,218) 0%, rgb(74,77,242) 100%);
+    background-image: -ms-linear-gradient( -45deg, rgb(85,107,218) 0%, rgb(74,77,242) 100%);
+    background-image: linear-gradient( -45deg, rgb(85,107,218) 0%, rgb(74,77,242) 100%);
+}
+.login-container{
+    position: relative;
+}
+.login-container>.login-bg1{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.login-container>.login-bg2{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    margin-left: -499px;
+}
+.login-container>.login-box{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -250px;
+    margin-left: -445px;
+    width: 890px;
+    height: 500px;
+    background-color: #fff;
+}
+.login-box>.login-left, .login-box>.login-right{
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+}
+.login-box>.login-left{
+    float: left;
+    padding: 144px 50px 0;
+    background-color: rgb( 109, 130, 232 );
+}
+.login-box>.login-right{
+    float: right;
+    padding: 144px 82px 0;
+}
+.login-left>.login-great{
+    font-size: 18px;
+    color: rgb( 255, 255, 255 );
+}
+.login-left>.login-title{
+    margin: 40px 0 160px;
+    line-height: 1.6;
+    font-size: 24px;
+    color: rgb( 255, 241, 98 );
+}
+.login-left>.login-company{
+    font-size: 14px;
+    color: rgb( 255, 255, 255 );
+    text-align: center;
+}
+.login-right .layui-form-label{
+    padding: 0;
+    line-height: 38px;
+    width: 16px;
+}
+.login-right .layui-input-block{
+    margin-left: 26px;
+}
+.login-right .layui-form-item{
+    margin-bottom: 31px;
+    border-bottom: 1px solid #e7e7e7;
+}
+.login-right input{
+    border: none;
+    outline: none;
+}
+.login-right .login-btn{
+    height: 61px;
+    margin-top: 31px;
+    font-size: 18px;
+    border-radius: 29px;
+    background-color: #5871EE;
+}
+.login-right .login-help{
+    padding-top: 37px;
+    text-align: center;
+}
+.login-right .login-help a{
+    line-height: 14px;
+    font-size: 12px;
+    color: #999;
+    text-decoration: underline;
+}
+.login-right .login-help i{
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    margin: 0 6px;
+    vertical-align: middle;
+    background-color: #ccc;
+}
+input::-webkit-input-placeholder{
+    font-size: 14px;
+    color: #ccc;
+}    /* 使用webkit内核的浏览器 */
+input:-moz-placeholder{
+    font-size: 14px;
+    color: #ccc;
+}    /* Firefox版本4-18 */
+input::-moz-placeholder{
+    font-size: 14px;
+    color: #ccc;
+}    /* Firefox版本19+ */
+input:-ms-input-placeholder{
+    font-size: 14px;
+    color: #ccc;
+}    /* IE浏览器 */
+input:-webkit-autofill { box-shadow: 0 0 0px 1000px white inset !important;}

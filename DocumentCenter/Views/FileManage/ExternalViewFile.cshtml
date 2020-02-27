@@ -1,0 +1,95 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>文档中心</title>
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+</head>
+<body>
+    @*<div id="loading" style="margin:0 auto;width:100px;text-align:center;font-size:36px;">
+            <i class="fa fa-spinner"></i>
+        </div>*@
+    
+
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/layui/layui.js"></script>
+    <script>
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+
+            function getSearchParam() {
+                var arr = location.search.slice(1).split("&");
+                var param = {};
+                for (var i = 0; i < arr.length; i++) {
+                    var index = arr[i].indexOf('=');
+                    var key = arr[i].slice(0, index);
+                    var value = arr[i].slice(index + 1);
+                    param[key] = value;
+                }
+                return param;
+            }
+
+            function OpenEditor() {
+                var search = getSearchParam();
+                var filePath = decodeURIComponent(search["filePath"]);
+                var fileName = filePath.slice(filePath.lastIndexOf('/') + 1);
+                var fileType = filePath.slice(filePath.lastIndexOf('.') + 1);
+
+                var param = {
+                    ExternalID: null,
+                    callbackUrl: null,
+                    documentId: null,
+                    fileName: fileName,
+                    fileType: fileType,
+                    ExternalFilePath: filePath,
+                    CreateUserID: null,
+                    CreateUserName: null,
+                    ExternalUserData: null
+                };
+
+                layer.load();
+
+                $.ajax({
+                    url: "/filemanage/externalSaveFileByYF",
+                    type: "post",
+                    data: param,
+                    success: function (result) {
+                        layer.closeAll('loading');
+                        window.open("/filemanage/editor?id=" + result.Id + "&mode=DocumentSystemView&userid=" + "&username=", "_self");
+                    }
+                })
+
+            }
+
+            OpenEditor();
+        })
+        
+
+        function initLoadingIcon() {
+            var loadingIcon = $("#loading");
+            var height = loadingIcon.height();
+            var windowHeight = window.innerHeight;
+            loadingIcon.css("margin-top", (windowHeight - height) / 2 + "px");
+        }
+
+        //initLoadingIcon();
+        
+        function isImage(fileType) {
+            fileType = fileType.toLowerCase();
+            var imageTypes = ["png", "jpg", "tif","gif","bmp"];
+            if (imageTypes.indexOf(fileType) != -1) {
+                return true;
+            }
+
+            return false;
+        }
+
+    </script>
+</body>
+</html>
+
+

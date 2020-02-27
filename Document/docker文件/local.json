@@ -1,0 +1,58 @@
+{
+    "services": {
+        "CoAuthoring": {
+            "sql": {
+                "dbHost": "localhost",
+                "dbName": "onlyoffice",
+                "dbUser": "onlyoffice",
+                "dbPass": "onlyoffice"
+            },
+            "redis": {
+                "host": "localhost"
+            },
+            "token": {
+                "enable": {
+                    "request": {
+                        "inbox": false,
+                        "outbox": false
+                    },
+                    "browser": false
+                },
+                "inbox": {
+                    "header": "Authorization"
+                },
+                "outbox": {
+                    "header": "Authorization"
+                }
+            },
+            "secret": {
+                "inbox": {
+                    "string": "secret"
+                },
+                "outbox": {
+                    "string": "secret"
+                },
+                "session": {
+                    "string": "secret"
+                }
+            },
+            "server": {
+                "savetimeoutdelay": 1000
+            },
+            "utils":{
+                "utils_common_fontdir": "null",
+				"utils_fonts_search_patterns": "*.ttf;*.ttc;*.otf",
+				"resource_expires": 31536000,
+                "limits_image_types_upload": "jpg;png;gif;bmp;tif;tiff"
+            }
+        }
+    },
+    "rabbitmq": {
+        "url": "amqp://guest:guest@localhost"
+    },
+    "FileConverter": {
+        "converter": {
+            "maxDownloadBytes": 1073741824
+        }
+    }
+}

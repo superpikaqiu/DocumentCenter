@@ -1,0 +1,7 @@
+0 0 * * 0 /home/clearcache-onlyoffice.sh
+
+rm -rf /var/lib/onlyoffice/*
+rm -rf /var/lib/postgresql/*
+rm -f /var/www/onlyoffice/documentserver/server/FileConverter/sources/core.*
+
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime

@@ -1,0 +1,359 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>文档中心</title>
+    <link href="~/Content/editor.css" rel="stylesheet" />
+</head>
+<body>
+
+    <div style="height:100%;" id="test">
+        <div id="editor"></div>
+    </div>
+
+
+    @Scripts.Render("~/bundles/jquery")
+
+    <script>
+        var pageData = {};
+        pageData.host = location.origin;
+        pageData.saveCommentPath = location.origin + "/filemanage/SaveOpinionList";
+
+        function openEditor() {
+            var param = getSearchParam();
+            var id = param["id"];
+            var mode = param["mode"];
+            var userId = param["userid"];
+            var userName = decodeURIComponent(param["username"]);
+
+            var permissions = null;
+
+
+            if (mode == "edit" || mode == "externalEdit") {
+                permissions = {
+                    "download": true,
+                    "edit": true,
+                    "print": true,
+                    "comment": true,
+                    "review": true
+                };
+            }
+            else if (mode == "view" || mode == "externalView") {
+                permissions = {
+                    "download": false,
+                    "edit": false,
+                    "print": false,
+                    "comment": true,
+                    "review": false
+                }
+            }
+            else if (mode == "DocumentSystemView") {
+                permissions = {
+                    "download": false,
+                    "edit": false,
+                    "print": false,
+                    "comment": false,
+                    "review": false
+                }
+            }
+
+            $.ajax({
+                url: "/filemanage/getfileinfo",
+                type: "post",
+                data: { id: id },
+                success: function (result) {
+                    if (result) {
+                        pageData.documentInfo = result.DocumentInfo;
+                        var documentType = getDocumentType(result.DocumentInfo.FileType);
+
+                        if (isImage(result.DocumentInfo.FileType)) {
+                            var url = pageData.host + result.DocumentInfo.RelativePath;
+                            if (result.DocumentInfo.FileType.toLowerCase() == "tif") {
+                                url = url.slice(0, url.lastIndexOf('.')) + ".gif";
+                            }
+                            location.href = url;
+                            return;
+                        }
+
+                        var histories = [];
+
+                        var onRequestHistory = function () {
+                            $.ajax({
+                                url: "/filemanage/getFileHistory",
+                                type: "post",
+                                data: { id: id },
+                                success: function (res) {
+                                    histories = res.History;
+                                    var tmpHistory = [];
+                                    for (var i = 0; i < histories.length; i++) {
+                                        var item = histories[i];
+                                        if (item.AutoSave == false) {
+                                            tmpHistory.push({
+                                                "changes": eval('(' + item.Changes + ')'),
+                                                "created": item.CreateTime,
+                                                "key": item.Key,
+                                                "serverVersion": item.ServerVersion,
+                                                "user": {
+                                                    "id": item.UserId,
+                                                    "name": item.UserName
+                                                },
+                                                "version": item.Version
+                                            });
+                                        }
+
+
+
+                                    }
+                                    pageData.docEditor.refreshHistory({
+                                        "currentVersion": res.CurrentVersion,
+                                        "history": tmpHistory
+                                    });
+                                }
+                            });
+
+
+                        };
+
+                        var onRequestHistoryData = function (event) {
+                            var version = event.data;
+                            var selectHistory;
+                            var previousHistory;
+
+                            for (var i = 0; i < histories.length; i++) {
+                                var item = histories[i];
+                                if (item.Version === version) {
+                                    selectHistory = item;
+                                    break;
+                                }
+                            }
+
+                            for (var i = 0; i < histories.length; i++) {
+                                var item = histories[i];
+                                if (item.Version === selectHistory.PreviousVersion) {
+                                    previousHistory = item;
+                                    break;
+                                }
+                            }
+
+                            var changesUrl = selectHistory.ChangesUrl ? pageData.host + "/filedownload/DownloadFromRelativePath?path=" + selectHistory.ChangesUrl : null;
+
+                            var data;
+
+                            if (previousHistory) {
+                                data = {
+                                    "changesUrl": changesUrl,
+                                    "key": selectHistory.Key,
+                                    "previous": {
+                                        "key": previousHistory.Key,
+                                        "url": pageData.host + "/filedownload/DownloadFromPath?path=" + previousHistory.Path
+                                    },
+                                    "url": pageData.host + "/filedownload/DownloadFromPath?path=" + selectHistory.Path,
+                                    "version": selectHistory.Version
+                                }
+                            }
+                            else {
+                                data = {
+                                    "key": selectHistory.Key,
+
+                                    "url": pageData.host + "/filedownload/DownloadFromPath?path=" + selectHistory.Path,
+                                    "version": selectHistory.Version
+                                }
+                            }
+                            pageData.docEditor.setHistoryData(data);
+                        };
+
+                        var onRequestHistoryClose = function () {
+                            document.location.reload();
+                        }
+
+                        var excelEdit = true;
+                        if (result.DocumentInfo.FileType.indexOf("xls") != -1 && (mode == "externalView" || mode == "view")) {
+                            excelEdit = false;
+                        }
+                        var onDocumentReady = function () {
+                            var data = {
+                                command: 'customInit',
+                                data: {
+                                    host: pageData.host,
+                                    documentInfoId: pageData.documentInfo.Id,
+                                    saveCommentPath: pageData.saveCommentPath,
+                                    excelEdit: excelEdit
+                                }
+                            }
+                            window.frames[0].postMessage(JSON.stringify(data), "*");
+
+                            //档案系统的页面屏蔽右键菜单
+                            if (mode == "DocumentSystemView") {
+                                data = {
+                                    command: 'hideContextMenu'
+                                }
+
+                                window.frames[0].postMessage(JSON.stringify(data), "*");
+                            }
+                        };
+
+                        var onAppReady = function () {
+                            var data = {
+                                command: 'appReady',
+                                data: {
+                                    host: pageData.host,
+                                    documentInfoId: pageData.documentInfo.Id
+                                }
+                            }
+                            window.frames[0].postMessage(JSON.stringify(data), "*");
+                        };
+
+                        var onDownloadAs = function (event) {
+                            //console.log("ONLYOFFICE Document Editor create file: " + event.data);
+                            $.ajax({
+                                url: "/filemanage/updateEditingUrl",
+                                type: "post",
+                                data: {
+                                    id: pageData.documentInfo.Id,
+                                    url: event.data
+                                }
+                            })
+                        };
+
+                        if (pageData.docEditor) {
+                            pageData.docEditor.destroyEditor();
+                        }
+
+                        pageData.docEditor = new DocsAPI.DocEditor("editor", {
+                            "document": {
+                                "fileType": result.DocumentInfo.FileType,
+                                "key": result.DocumentInfo.Key,
+                                "title": result.DocumentInfo.FileName,
+                                "url": pageData.host + result.DocumentInfo.RelativePath,
+                                "permissions": permissions
+                            },
+                            "documentType": documentType,
+                            "editorConfig": {
+                                "callbackUrl": pageData.host + "/filemanage/savefile",
+                                "mode": "edit",
+                                "lang": "zh-CN",
+                                "user": {
+                                    "id": userId,
+                                    "name": userName
+                                },
+                                "customization": {
+                                    "forcesave": true,
+                                    "commentAuthorOnly": true,
+                                    "comments": true,
+                                    "showReviewChanges": false,
+                                    "goback": false,
+                                    "chat": false,
+                                    "zoom": 100,
+                                    "help": false,
+                                    "hideRightMenu": true
+                                }
+                            },
+                            "events": {
+                                "onRequestHistory": onRequestHistory,
+                                "onRequestHistoryData": onRequestHistoryData,
+                                "onRequestHistoryClose": onRequestHistoryClose,
+                                "onDocumentReady": onDocumentReady,
+                                "onAppReady": onAppReady,
+                                "onDownloadAs": onDownloadAs
+                            },
+                            "type": "desktop",
+                            "width": "100%",
+                            "height": "100%"
+                        });
+
+
+                    }
+                }
+            })
+
+        }
+
+
+        function getSearchParam() {
+            var arr = location.search.slice(1).split("&");
+            var param = {};
+            for (var i = 0; i < arr.length; i++) {
+                var index = arr[i].indexOf('=');
+                var key = arr[i].slice(0, index);
+                var value = arr[i].slice(index + 1);
+                param[key] = value;
+            }
+            return param;
+        }
+
+        function getDocumentType(filetype) {
+            filetype = filetype.toLowerCase();
+            var documentTypeDic = {
+                "text": ["doc", "docm", "docx", "dot", "dotm", "dotx", "epub", "fodt", "htm", "html", "mht",
+                    "odt", "ott", "pdf", "rtf", "txt", "djvu", "xps", "dwg"],
+                "spreadsheet": ["csv", "fods", "ods", "ots", "xls", "xlsm", "xlsx", "xlt", "xltm", "xltx"],
+                "presentation": ["fodp", "odp", "otp", "pot", "potm", "potx", "pps", "ppsm", "ppsx", "ppt", "pptm", "pptx"]
+            };
+
+            if (documentTypeDic["text"].indexOf(filetype) != -1) {
+                return "text";
+            }
+            else if (documentTypeDic["spreadsheet"].indexOf(filetype) != -1) {
+                return "spreadsheet";
+            }
+            else if (documentTypeDic["presentation"].indexOf(filetype) != -1) {
+                return "presentation";
+            }
+
+            return "";
+        }
+
+        function getOnlyOfficePath() {
+            $.ajax({
+                url: "/FileManage/GetOnlyOfficePath",
+                type: "get",
+                success: function (res) {
+                    var apiScript = document.createElement("script");
+                    apiScript.type = "text/javascript";
+                    apiScript.src = res.Path + "/web-apps/apps/api/documents/api.js";
+                    apiScript.onload = function () {
+                        openEditor();
+                    }
+                    document.body.appendChild(apiScript);
+                }
+            })
+        }
+
+        function isImage(fileType) {
+            fileType = fileType.toLowerCase();
+            var imageTypes = ["png", "jpg", "tif", "gif", "bmp"];
+            if (imageTypes.indexOf(fileType) != -1) {
+                return true;
+            }
+
+            return false;
+        }
+
+        getOnlyOfficePath();
+    </script>
+    <script>
+        window.addEventListener("message", function (e) {
+            var data = eval('(' + e.data + ')');
+            if (data.command == "forceSave") {
+
+            }
+
+        });
+
+        //window.addEventListener("beforeunload", function (e) {
+        //    return false;
+
+        //});
+
+        //定时保存最新文件路径
+        window.setInterval(function () {
+            pageData.docEditor.downloadAs();
+        }, 1000 * 1000);
+    </script>
+</body>
+</html>

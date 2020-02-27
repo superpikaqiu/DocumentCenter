@@ -1,0 +1,106 @@
+﻿
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/Scripts/layui/css/layui.css" rel="stylesheet" />
+    <title>文档中心</title>
+</head>
+<body>
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/layui/layui.js"></script>
+    <script>
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+            openEditor();
+        })
+
+        function getSearchParam() {
+            var arr = location.search.slice(1).split("&");
+            var param = {};
+            for (var i = 0; i < arr.length; i++) {
+                var index = arr[i].indexOf('=');
+                var key = arr[i].slice(0, index);
+                var value = arr[i].slice(index + 1);
+                param[key] = value;
+            }
+            return param;
+        }
+
+        function openEditor() {
+            var search = getSearchParam();
+            var filePath = decodeURIComponent(search["filePath"]);
+            var fileName = filePath.slice(filePath.lastIndexOf("/") + 1);
+            var fileType = fileName.slice(fileName.lastIndexOf(".") + 1);
+            var token = search["token"];
+            var mode = search["mode"];
+            var resultId = search["result_id"];
+            var type = search["type"];
+            var extendData = {
+                token: token,
+                result_id: resultId,
+                type: type
+            };
+            
+            $.ajax({
+                url: "/user/getUserCenter",
+                type: "get",
+                success: function (res) {
+                    $.ajax({
+                        url: res.UserCenter + "/api/user/common/current",
+                        type: "get",
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        success: function (res) {
+                            var param = {
+                                ExternalFilePath: filePath,
+                                fileName: fileName,
+                                fileType: fileType,
+                                CreateUserName: res.real_name,
+                                CreateUserID: res.uid,
+                                extendData: JSON.stringify(extendData)
+                            };
+
+                            var loadIndex = layer.load(1);
+                            $.ajax({
+                                url: "/filemanage/externalSaveFileByPms",
+                                type: "post",
+                                data: param,
+                                success: function (result) {
+                                    layer.close(loadIndex);
+
+                                    if (mode == "Edit") {
+                                        window.open("/filemanage/editor?id=" + result.Id + "&mode=externalEdit&userid=" + res.uid + "&username="
+                                            + res.real_name , "_self");
+                                    }
+                                    else if (mode == "View") {
+                                        window.open("/filemanage/editor?id=" + result.Id + "&mode=externalView&userid=" + res.uid + "&username="
+                                            + res.real_name , "_self");
+                                    }
+                                }
+                            })
+
+                        },
+                        error: function () {
+                            alert("请先登录");
+                        }
+                    });
+                }
+            })
+            
+
+        }
+
+        
+    </script>
+</body>
+</html>
+
+

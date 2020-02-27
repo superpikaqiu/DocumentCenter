@@ -1,0 +1,188 @@
+﻿<style>
+    .separator {
+        overflow: hidden;
+        display: inline-block;
+        zoom: 1;
+        border: 0;
+        border-left: solid 1px #adb3b9;
+        margin: 1px;
+        margin-top: 0px;
+        height: 25px;
+        vertical-align: middle;
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+</style>
+<div style="margin:15px;">
+    <div class="layui-btn-container" style="display:inline-block;">
+        <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" id="btnDownload">
+            <i class="layui-icon">&#xe601;</i> 下载
+        </button>
+    </div>
+    <span class="separator"></span>
+    <div style="display:inline-block;">
+        <input id="searchText" type="text" class="layui-input" placeholder="请输入文件名称搜索" style="display:inline-block;width:200px;padding-right:50px;" />
+        <i id="clearIcon" class="layui-icon layui-icon-close" style="position:relative;left:-50px;cursor:pointer;"></i>
+        <i id="searchIcon" class="layui-icon layui-icon-search" style="position:relative;left:-50px;cursor:pointer;"></i>
+    </div>
+    <table id="fileList" lay-filter="tbFileInfo" class="layui-table" style="width:90%;"></table>
+</div>
+
+<script type="text/html" id="fileInfoBar">
+    <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">编辑</a>
+</script>
+
+@section scripts{
+    <script>
+        layui.use(['table', 'upload', 'form', 'layer'], function () {
+            var table = layui.table;
+            var upload = layui.upload;
+            var form = layui.form;
+            var layer = layui.layer;
+
+            var pageData = {};
+
+            //我的文件列表初始化
+            table.render({
+                elem: '#fileList',
+                id: 'fileList',
+                url: '/fileShare/getShareFileList', //数据接口
+                page: true, //开启分页
+                where: {
+                    timestamp: new Date().getTime()
+                },
+                //limits: [10, 20, 50],
+                //limit:10,
+                loading: true,
+                cols: [[ 
+                    { type: 'checkbox' },
+                    { field: 'FileName', title: '文件名称', sort: true },
+                    {
+                        field: 'Size', title: '文件大小', sort: true, templet: function (d) {
+                            var size = d.Size / 1024;
+                            return size.toFixed(2) + 'KB';
+                        }
+                    },
+                    { field: 'CreateUserName', title: '创建人', sort: true },
+                    { field: 'ModifyUserName', title: '更新人', sort: true },
+                    { field: 'ModifyTime', title: '更新时间', sort: true },
+                    { fixed: 'right', title: '操作', align: 'center', toolbar: '#fileInfoBar', width: 200 }
+
+                ]],
+                parseData: function (res) {
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.count, //解析数据长度
+                        "data": res.data //解析数据列表
+                    };
+                }
+            });
+
+            //我的文件操作按钮初始化
+            table.on('tool(tbFileInfo)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                var tr = obj.tr;
+
+                var userId = global.user.id;
+                var userName = global.user.name;
+
+                var permission = data.Permission.split(',');
+                var editWindow;
+                if (layEvent === 'detail') {
+                    if (permission.indexOf('view') == -1) {
+                        layer.msg("没有权限进行此操作", { icon: 5, anim: 6 });
+                        return;
+                    }
+
+                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=view&userid=" + userId + "&username="
+                        + userName , "_blank");                    
+                }
+                else if (layEvent === 'edit') {
+                    if (permission.indexOf('edit') == -1) {
+                        layer.msg("没有权限进行此操作", { icon: 5, anim: 6 });
+                        return;
+                    }
+
+                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=edit&userid=" + userId + "&username="
+                        + userName , "_blank");
+                }
+
+                editWindow.addEventListener('beforeunload', function () {
+                    $.ajax({
+                        url: "/myfile/UpdateFileAfterEdit",
+                        type: "post",
+                        data: {
+                            id: data.Id
+                        },
+                        success: function () {
+                            table.reload('fileList', { where: { timestamp: new Date().getTime() } });
+                        }
+                    })
+                })
+            });
+
+            function bindBtnEvent() {
+                $("#searchIcon").on('click', function () {
+                    searchFile();
+                });
+
+                $("#searchText").on('keydown', function (e) {
+                    if (e.keyCode == 13) {
+                        searchFile();
+                    }
+                });
+
+                $("#clearIcon").on('click', function () {
+                    $("#searchText").val('');
+                    searchFile();
+                })
+
+                $("#btnDownload").on("click", function () {
+                    var checkStatus = table.checkStatus('fileList');
+
+                    if (checkStatus.data.length == 0) {
+                        layer.msg("请选择要下载的文件!", { icon: 5, anim: 6 });
+                        return;
+                    }
+
+                    if (checkStatus.data.length == 1) {
+                        location.href = "/FileDownload/Download?path=" + checkStatus.data[0].Path + "&fileName=" + checkStatus.data[0].FileName;
+                    }
+                    else {
+                        var fileList = [];
+                        for (var i = 0; i < checkStatus.data.length; i++) {
+                            fileList.push({
+                                fileName: checkStatus.data[i].FileName,
+                                filePath: checkStatus.data[i].Path
+                            });
+                        }
+
+                        $.ajax({
+                            url: "/FileDownload/GetFileUrl",
+                            type: "post",
+                            data: {
+                                items: fileList
+                            },
+                            success: function (res) {
+                                location.href = "/FileDownload/DownloadTempFile?filePath=" + res.filePath;
+                            }
+                        })
+                    }
+                })
+            }
+
+            function searchFile() {
+                var searchText = $("#searchText").val();
+
+                table.reload('fileList', { where: { fileName: searchText, timestamp: new Date().getTime() } });
+            }
+
+            bindBtnEvent();
+        });
+
+
+    </script>
+}

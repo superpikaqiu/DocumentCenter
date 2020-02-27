@@ -1,0 +1,105 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="~/Scripts/layui/css/layui.css" rel="stylesheet" />
+    <link href="~/Content/login/login.css" rel="stylesheet" />
+    <title>管理后台</title>
+</head>
+<body>
+    <div class="login-container">
+        <img class="login-bg1" src="~/Content/images/login-bg1.png" alt="">
+        <img class="login-bg2" src="~/Content/images/login-bg2.png" alt="">
+        <div class="login-box">
+            <div class="login-left">
+                <p class="login-great">WELCOME</p>
+                <P class="login-title">文档协作中心</P>
+                <p class="login-company">Copyright ©2019 福建积微科技有限公司</p>
+            </div>
+            <div class="login-right">
+                <div class="layui-form">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" for="username"><img height="18" src="~/Content/images/login-account.png" alt=""></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="username" id="username" placeholder="账户" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" for="password"><img height="18" src="~/Content/images/login-password.png" alt=""></label>
+                        <div class="layui-input-block">
+                            <input type="password" name="password" id="password" lay-verify="required" placeholder="密码" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" style="border:none !important;">
+                        <button id="login_btn" class="layui-btn layui-btn-fluid login-btn" onclick="login();">登录</button>
+                    </div>
+                </div>
+                <div class="login-help">
+                    <a href="javascript:void(0)">用户手册</a>
+                    <i></i>
+                    <a href="javascript:void(0)">常见问题及解答</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/layui/layui.js"></script>
+
+    <script>
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+
+        })
+
+        document.onkeyup = function (e) {
+            var theEvent = e || window.event;
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+            if (code == '13') {
+                login();
+            }
+        };
+
+        function login() {
+            var username = $.trim($("#username").val());
+            var pwd = $("#password").val();
+            if (username == null || username == '') {
+                layer.msg("请输入用户名");
+                return;
+            }
+            if (pwd == null || pwd == '') {
+                layer.msg("请输入密码");
+                return;
+            }
+
+            var loadIndex = layer.load(1);
+
+            $.ajax({
+                url: "/user/login",
+                type: "post",
+                data: { "userName": username, "password": pwd },
+                success: function (result) {
+                    layer.close(loadIndex);
+                    if (!result.Result) {
+                        layer.msg(result.Message);
+                        return;
+                    }
+
+                    window.location.href = "/Myfile/Index";
+                },
+                error: function () {
+                    layer.close(loadIndex);
+                }
+            })
+        }
+        
+    </script>
+</body>
+</html>

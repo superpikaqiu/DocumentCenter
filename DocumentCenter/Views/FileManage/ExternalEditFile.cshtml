@@ -1,0 +1,81 @@
+﻿
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>文档中心</title>
+</head>
+<body>
+    @Scripts.Render("~/bundles/jquery")
+    <script>
+
+        function getSearchParam() {
+            var arr = location.search.slice(1).split("&");
+            var param = {};
+            for (var i = 0; i < arr.length; i++) {
+                var index = arr[i].indexOf('=');
+                var key = arr[i].slice(0, index);
+                var value = arr[i].slice(index + 1);
+                param[key] = value;
+            }
+            return param;
+        }
+
+        function OpenEditor() {
+            var search = getSearchParam();
+            var id = search["id"];
+            var callbackUrl = search["callbackUrl"];
+            var saveOpinionUrl = search["saveOpinionUrl"];
+            var startEditCallbackUrl = search["startEditCallbackUrl"];
+            var filePath = decodeURIComponent(search["filePath"]);
+            var fileName = decodeURIComponent(search["fileName"]);
+            var userId = search["userId"];
+            var userName = decodeURIComponent(search["userName"]);
+            var mode = search["mode"];
+            var fileType = fileName.slice(fileName.lastIndexOf('.') + 1);
+            
+            var param = {
+                ExternalID: id,
+                ExternalCallbackUrl: callbackUrl,
+                ExternalStartEditUrl: startEditCallbackUrl,
+                ExternalSaveOpinionUrl: saveOpinionUrl,
+                ExternalFilePath: filePath,
+                fileName: fileName,
+                fileType: fileType,
+                CreateUserName: userName,
+                CreateUserID: userId
+            };
+
+            $.ajax({
+                url: "/filemanage/externalSaveFileByYF",
+                type: "post",
+                data: param,
+                success: function (result) {
+                    var url = "";
+                    if (mode == "Edit") {
+                        url = "/filemanage/editor?id=" + result.Id + "&mode=externalEdit&userid=" + userId + "&username="
+                            + userName;
+                    }
+                    else if (mode == "View") {
+                        url = "/filemanage/editor?id=" + result.Id + "&mode=externalView&userid=" + userId + "&username="
+                            + userName;
+                    }
+
+                    window.open(url, "_self");
+                }
+            })
+            
+        }
+
+        OpenEditor();
+    </script>
+</body>
+</html>
+
+

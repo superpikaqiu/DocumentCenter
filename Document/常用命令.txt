@@ -1,0 +1,24 @@
+
+docker commit 283c onlyoffice
+
+docker save -o onlyoffice.tar onlyoffice
+
+docker load < onlyoffice.tar
+
+mount -o remount rw /
+
+docker 安装vim
+apt-get update
+apt-get install vim
+
+运行容器
+docker run -i -t -d -p 9000:9000 -v /app/onlyoffice/DocumentServer/logs:/var/log/onlyoffice -v /app/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data  -v /app/onlyoffice/DocumentServer/lib:/var/lib/onlyoffice -v /app/onlyoffice/DocumentServer/db:/var/lib/postgresql onlyoffice
+
+
+/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/
+documenteditor
+spreadsheeteditor
+presentationeditor
+
+重新挂载
+vmhgfs-fuse .host:/share-centos /mnt/hgfs
