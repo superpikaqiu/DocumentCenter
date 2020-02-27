@@ -767,6 +767,10 @@
                     );
                 }
 
+                //默认选择协作菜单
+                $("#toolbar div.box-tabs section.tabs li:nth-child(6)").click();
+
+
                 //关闭页面前提前评论
                 window.addEventListener("beforeunload", function () {
                     var commentController = DE.getController(

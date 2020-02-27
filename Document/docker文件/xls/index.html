@@ -352,6 +352,9 @@
                     $("a#id-context-menu-item-view-add-comment").text("发表评论");
                 });
 
+                //默认选择协作菜单
+                $("#toolbar section.box-tabs section.tabs li:nth-child(6)").click();
+
                 //关闭页面前提前评论
                 window.addEventListener("beforeunload", function () {
                     var commentController = SSE.getController("Common.Controllers.Comments");
