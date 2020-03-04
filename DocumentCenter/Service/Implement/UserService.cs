@@ -53,6 +53,7 @@ namespace DocumentCenter.Service.Implement
                     var userData = data.Data[0];
                     HttpContext.Current.Session["UserID"] = userData.ID;
                     HttpContext.Current.Session["UserName"] = userData.Name;
+                    HttpContext.Current.Session["YFMIS3"] = userData.YFMIS3;
 
                     SaveUser(new UserDto
                     {

@@ -59,7 +59,9 @@
                     data: param,
                     success: function (result) {
                         layer.closeAll('loading');
-                        window.open("/filemanage/editor?id=" + result.Id + "&mode=DocumentSystemView&userid=" + "&username=", "_self");
+                        sessionStorage.id = result.Id;
+                        sessionStorage.mode = "DocumentSystemView";
+                        window.open("/filemanage/editor", "_self");
                     }
                 })
 

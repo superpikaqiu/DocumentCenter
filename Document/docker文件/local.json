@@ -43,7 +43,7 @@
                 "utils_common_fontdir": "null",
 				"utils_fonts_search_patterns": "*.ttf;*.ttc;*.otf",
 				"resource_expires": 31536000,
-                "limits_image_types_upload": "jpg;png;gif;bmp;tif;tiff"
+                "limits_image_types_upload": "tiff"
             }
         }
     },
@@ -52,7 +52,30 @@
     },
     "FileConverter": {
         "converter": {
-            "maxDownloadBytes": 1073741824
+            "maxDownloadBytes": 1073741824,
+            "inputLimits": [
+				{
+				"type": "docx;dotx;docm;dotm",
+				"zip": {
+					"uncompressed": "1000MB",
+					"template": "*.xml"
+				}
+				},
+				{
+				"type": "xlsx;xltx;xlsm;xltm",
+				"zip": {
+					"uncompressed": "1000MB",
+					"template": "*.xml"
+				}
+				},
+				{
+				"type": "pptx;ppsx;potx;pptm;ppsm;potm",
+				"zip": {
+					"uncompressed": "1000MB",
+					"template": "*.xml"
+				}
+				}
+			]
         }
     }
 }

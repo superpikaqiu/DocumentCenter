@@ -227,19 +227,19 @@
                 var data = obj.data;
                 var layEvent = obj.event;
                 var tr = obj.tr;
-
-                var userId = global.user.id;
-                var userName = global.user.name;
-
-                var editWindow;
+                
+                sessionStorage.id = data.DocumentID;
+                sessionStorage.userId = global.user.id;
+                sessionStorage.userName = global.user.name;
+                
                 if (layEvent === 'detail') {
-                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=view&userid=" + userId + "&username="
-                        + userName, "_blank");
+                    sessionStorage.mode = "view";
                 }
                 else if (layEvent === 'edit') {
-                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=edit&userid=" + userId + "&username="
-                        + userName, "_blank");
+                    sessionStorage.mode = "edit";
                 }
+
+                var editWindow = window.open("/filemanage/editor","_blank");
 
                 editWindow.addEventListener('beforeunload', function () {
                     $.ajax({

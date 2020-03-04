@@ -57,7 +57,9 @@ namespace DocumentCenter.Service.Implement
 
         public DocumentInfo CreateDocument(CreateDocumentInput input, string url)
         {
-            var req = WebRequest.Create(url);
+            var req = WebRequest.CreateHttp(url);
+            string authCookie = HttpContext.Current.Session["YFMIS3"] != null ? HttpContext.Current.Session["YFMIS3"].ToString() : "";
+            req.Headers.Add(HttpRequestHeader.Cookie, "YFMIS3=" + authCookie);
             var stream = req.GetResponse().GetResponseStream();
             var documentInfo = CreateDocument(input, stream);
             stream.Close();

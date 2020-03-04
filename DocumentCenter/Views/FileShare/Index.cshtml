@@ -85,20 +85,19 @@
                 var data = obj.data;
                 var layEvent = obj.event;
                 var tr = obj.tr;
-
-                var userId = global.user.id;
-                var userName = global.user.name;
-
+        
                 var permission = data.Permission.split(',');
-                var editWindow;
+                
+                sessionStorage.id = data.DocumentID;
+                sessionStorage.userId = global.user.id;
+                sessionStorage.userName = global.user.name;
                 if (layEvent === 'detail') {
                     if (permission.indexOf('view') == -1) {
                         layer.msg("没有权限进行此操作", { icon: 5, anim: 6 });
                         return;
                     }
 
-                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=view&userid=" + userId + "&username="
-                        + userName , "_blank");                    
+                    sessionStorage.mode = "view";            
                 }
                 else if (layEvent === 'edit') {
                     if (permission.indexOf('edit') == -1) {
@@ -106,9 +105,10 @@
                         return;
                     }
 
-                    editWindow = window.open("/filemanage/editor?id=" + data.DocumentID + "&mode=edit&userid=" + userId + "&username="
-                        + userName , "_blank");
+                    sessionStorage.mode = "edit";
                 }
+
+                var editWindow = window.open("/filemanage/editor", "_blank");
 
                 editWindow.addEventListener('beforeunload', function () {
                     $.ajax({

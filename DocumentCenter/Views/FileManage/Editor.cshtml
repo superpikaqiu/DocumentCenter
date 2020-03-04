@@ -26,14 +26,12 @@
 
         function openEditor() {
             var param = getSearchParam();
-            var id = param["id"];
-            var mode = param["mode"];
-            var userId = param["userid"];
-            var userName = decodeURIComponent(param["username"]);
+            var id = sessionStorage.id;
+            var mode = sessionStorage.mode;
+            var userId = sessionStorage.userId;
+            var userName = sessionStorage.userName;
 
-            history.replaceState({}, "", "/filemanage/editor")
             var permissions = null;
-
 
             if (mode == "edit" || mode == "externalEdit") {
                 permissions = {
@@ -269,6 +267,9 @@
 
 
                     }
+                },
+                error: function () {
+                    location.href = "/login/index";
                 }
             })
 

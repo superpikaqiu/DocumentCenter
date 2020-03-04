@@ -39,7 +39,8 @@
             var userName = decodeURIComponent(search["userName"]);
             var mode = search["mode"];
             var fileType = fileName.slice(fileName.lastIndexOf('.') + 1);
-            
+
+            history.replaceState({}, "", "/filemanage/externalEditFile");
             var param = {
                 ExternalID: id,
                 ExternalCallbackUrl: callbackUrl,
@@ -57,14 +58,15 @@
                 type: "post",
                 data: param,
                 success: function (result) {
-                    var url = "";
+                    var url = "/filemanage/editor";
+                    sessionStorage.id = result.Id;
+                    sessionStorage.userId = userId;
+                    sessionStorage.userName = userName;
                     if (mode == "Edit") {
-                        url = "/filemanage/editor?id=" + result.Id + "&mode=externalEdit&userid=" + userId + "&username="
-                            + userName;
+                        sessionStorage.mode = "externalEdit";
                     }
                     else if (mode == "View") {
-                        url = "/filemanage/editor?id=" + result.Id + "&mode=externalView&userid=" + userId + "&username="
-                            + userName;
+                        sessionStorage.mode = "externalView";
                     }
 
                     window.open(url, "_self");

@@ -18,6 +18,13 @@ namespace DocumentCenter.Domain.AuthConfig
         private readonly IUserService userService = new UserService();
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
+
+            if (filterContext.ActionDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true)
+                || filterContext.ActionDescriptor.ControllerDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true))
+            {
+                return;
+            }
+
             try
             {
                 var userInfo = filterContext.HttpContext.Request.QueryString["userInfo"];

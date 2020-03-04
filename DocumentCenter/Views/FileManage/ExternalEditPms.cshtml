@@ -75,15 +75,17 @@
                                 data: param,
                                 success: function (result) {
                                     layer.close(loadIndex);
-
+                                    sessionStorage.id = result.Id;
+                                    sessionStorage.userId = res.uid;
+                                    sessionStorage.userName = res.real_name;
                                     if (mode == "Edit") {
-                                        window.open("/filemanage/editor?id=" + result.Id + "&mode=externalEdit&userid=" + res.uid + "&username="
-                                            + res.real_name , "_self");
+                                        sessionStorage.mode = "externalEdit";
                                     }
                                     else if (mode == "View") {
-                                        window.open("/filemanage/editor?id=" + result.Id + "&mode=externalView&userid=" + res.uid + "&username="
-                                            + res.real_name , "_self");
+                                        sessionStorage.mode = "externalView";
                                     }
+
+                                    window.open("/filemanage/editor", "_self");
                                 }
                             })
 

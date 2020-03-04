@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using DocumentCenter.Domain.Helper;
 using DocumentCenter.Service.Interface;
 using DocumentCenter.Service.Implement;
+using DocumentCenter.Domain.AuthConfig;
 
 namespace DocumentCenter.Controllers
 {
@@ -38,6 +39,7 @@ namespace DocumentCenter.Controllers
             return View();
         }
 
+        [Authentication]
         public ActionResult ExternalEditFile()
         {
             return View();
@@ -92,6 +94,7 @@ namespace DocumentCenter.Controllers
         /// 6：手动保存
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult SaveFile()
         {
             string body;
@@ -131,6 +134,7 @@ namespace DocumentCenter.Controllers
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult ExternalRefreshFile(ExternalRefreshFileInput input)
         {
             fileManageService.ExternalRefreshFile(input);
@@ -159,12 +163,14 @@ namespace DocumentCenter.Controllers
             fileManageService.UpdateEditingUrl(input);
         }
 
+        [AllowAnonymous]
         public JsonResult GetFileSyncList()
         {
             var result = fileManageService.GetSyncDocumentList();
             return Json(result,JsonRequestBehavior.AllowGet);
         }
 
+        [AllowAnonymous]
         public void FileSyncCallback(List<FileSyncResultDto> fileSyncResultDtos)
         {
             fileManageService.FileSyncCallback(fileSyncResultDtos);
@@ -177,6 +183,7 @@ namespace DocumentCenter.Controllers
             return Json(result);
         }
 
+        [AllowAnonymous]
         public void SaveOpinionList(SaveOpinionInput input)
         {
             fileManageService.SaveOpinionList(input);
